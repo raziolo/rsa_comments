@@ -1,0 +1,573 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSA Encrypt & Decrypt Tool</title>
+    <style>
+        :root {
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary-color: #f3f4f6;
+  --text-color: #1f2937;
+  --light-text: #6b7280;
+  --border-color: #e5e7eb;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --container-width: 800px;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: #f9fafb;
+  padding: 20px;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-color);
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: var(--text-color);
+}
+
+h3 {
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.info-text {
+  margin-bottom: 15px;
+  color: var(--light-text);
+}
+
+.key-generation {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8fafc;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.key-display {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .key-display {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 30px;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--light-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-btn:hover {
+  color: var(--primary-color);
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+  font-family: monospace;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.action-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.action-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.result-container {
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  position: relative;
+}
+
+.result {
+  min-height: 100px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 10px;
+  font-family: monospace;
+  padding: 10px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: white;
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.copy-btn.small {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.copy-btn:hover {
+  background-color: var(--secondary-color);
+}
+
+.copy-btn .copied-text {
+  display: none;
+  color: var(--success-color);
+}
+
+.copy-btn.copied .copy-text {
+  display: none;
+}
+
+.copy-btn.copied .copied-text {
+  display: inline;
+}
+
+.error-message {
+  color: var(--error-color);
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.footer {
+  margin-top: 30px;
+  text-align: center;
+  color: var(--light-text);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  .tabs {
+    flex-direction: row;
+  }
+
+  .tab-btn {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .copy-btn {
+    position: static;
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .copy-btn.small {
+    position: static;
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+  }
+}
+
+    </style>
+  <!-- JSEncrypt library for RSA - Load this BEFORE our script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.2.1/jsencrypt.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>RSA Encryption & Decryption Tool</h1>
+
+    <div class="key-generation">
+      <h2>Key Generation</h2>
+      <p class="info-text">Generate a new RSA key pair for encryption and decryption.</p>
+      <button id="generate-keys" class="action-btn">Generate New Key Pair</button>
+      <div class="key-display">
+        <div class="form-group">
+          <label for="public-key-display">Public Key</label>
+          <textarea id="public-key-display" readonly></textarea>
+          <button id="copy-public-key" class="copy-btn small">
+            <span class="copy-text">Copy</span>
+            <span class="copied-text">Copied!</span>
+          </button>
+        </div>
+        <div class="form-group">
+          <label for="private-key-display">Private Key</label>
+          <textarea id="private-key-display" readonly></textarea>
+          <button id="copy-private-key" class="copy-btn small">
+            <span class="copy-text">Copy</span>
+            <span class="copied-text">Copied!</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="encrypt">Encrypt</button>
+      <button class="tab-btn" data-tab="decrypt">Decrypt</button>
+    </div>
+
+    <div class="tab-content active" id="encrypt">
+      <h2>Encrypt</h2>
+      <div class="form-group">
+        <label for="encrypt-text">Text to encrypt</label>
+        <textarea id="encrypt-text" placeholder="Enter text to encrypt..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="public-key">Public Key</label>
+        <textarea id="public-key" placeholder="Paste public key here..."></textarea>
+      </div>
+
+      <button id="encrypt-btn" class="action-btn">Encrypt</button>
+
+      <div class="result-container">
+        <h3>Result</h3>
+        <div class="result" id="encrypt-result"></div>
+        <button id="encrypt-copy" class="copy-btn">
+          <span class="copy-text">Copy</span>
+          <span class="copied-text">Copied!</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="decrypt">
+      <h2>Decrypt</h2>
+      <div class="form-group">
+        <label for="decrypt-text">Text to decrypt</label>
+        <textarea id="decrypt-text" placeholder="Enter encrypted text to decrypt..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="private-key">Private Key</label>
+        <textarea id="private-key" placeholder="Paste private key here..."></textarea>
+      </div>
+
+      <button id="decrypt-btn" class="action-btn">Decrypt</button>
+
+      <div class="result-container">
+        <h3>Result</h3>
+        <div class="result" id="decrypt-result"></div>
+        <button id="decrypt-copy" class="copy-btn">
+          <span class="copy-text">Copy</span>
+          <span class="copied-text">Copied!</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Note: This is a simplified RSA implementation for demonstration purposes only. Not suitable for sensitive data.</p>
+    </div>
+  </div>
+
+  <script>
+      document.addEventListener("DOMContentLoaded", () => {
+  // Tab switching functionality
+  const tabButtons = document.querySelectorAll(".tab-btn")
+  const tabContents = document.querySelectorAll(".tab-content")
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      // Remove active class from all buttons and contents
+      tabButtons.forEach((btn) => btn.classList.remove("active"))
+      tabContents.forEach((content) => content.classList.remove("active"))
+
+      // Add active class to clicked button and corresponding content
+      button.classList.add("active")
+      const tabId = button.getAttribute("data-tab")
+      document.getElementById(tabId).classList.add("active")
+    })
+  })
+
+  // Key generation functionality
+  const generateKeysBtn = document.getElementById("generate-keys")
+  const publicKeyDisplay = document.getElementById("public-key-display")
+  const privateKeyDisplay = document.getElementById("private-key-display")
+  const publicKeyInput = document.getElementById("public-key")
+  const privateKeyInput = document.getElementById("private-key")
+
+  function generateKeys() {
+    // Check if JSEncrypt is available
+    if (typeof JSEncrypt === "undefined") {
+      console.error("JSEncrypt library not loaded!")
+      alert("Error: Encryption library not loaded. Please check your internet connection and try again.")
+      return
+    }
+
+    generateKeysBtn.textContent = "Generating..."
+    generateKeysBtn.disabled = true
+
+    // Use setTimeout to prevent UI freezing during key generation
+    setTimeout(() => {
+      try {
+        // Create a new instance for key generation
+        const keyGenerator = new JSEncrypt({ default_key_size: 1024 })
+
+        // Generate new key pair
+        keyGenerator.getKey()
+
+        // Get the keys
+        const publicKey = keyGenerator.getPublicKey()
+        const privateKey = keyGenerator.getPrivateKey()
+
+        // Display the keys
+        publicKeyDisplay.value = publicKey
+        privateKeyDisplay.value = privateKey
+
+        // Auto-fill the encryption/decryption key inputs
+        publicKeyInput.value = publicKey
+        privateKeyInput.value = privateKey
+      } catch (error) {
+        console.error("Key generation error:", error)
+        alert("Error generating keys. Please check the console for details.")
+      } finally {
+        generateKeysBtn.textContent = "Generate New Key Pair"
+        generateKeysBtn.disabled = false
+      }
+    }, 100)
+  }
+
+  // Add click event listener to generate keys button
+  generateKeysBtn.addEventListener("click", generateKeys)
+
+  // Encrypt functionality
+  const encryptBtn = document.getElementById("encrypt-btn")
+  const encryptText = document.getElementById("encrypt-text")
+  const encryptResult = document.getElementById("encrypt-result")
+
+  encryptBtn.addEventListener("click", () => {
+    // Check if JSEncrypt is available
+    if (typeof JSEncrypt === "undefined") {
+      showError(encryptBtn, "Encryption library not loaded. Please check your internet connection.")
+      return
+    }
+
+    // Validate inputs
+    if (!encryptText.value.trim() || !publicKeyInput.value.trim()) {
+      showError(encryptBtn, "Please fill in all fields")
+      return
+    }
+
+    try {
+      // Create a new instance for encryption
+      const encryptInstance = new JSEncrypt()
+      encryptInstance.setPublicKey(publicKeyInput.value)
+
+      // Encrypt the text
+      const encrypted = encryptInstance.encrypt(encryptText.value)
+
+      if (encrypted === false) {
+        showError(encryptBtn, "Encryption failed. Check your public key.")
+        return
+      }
+
+      encryptResult.textContent = encrypted
+    } catch (error) {
+      showError(encryptBtn, "Encryption error: " + error.message)
+    }
+  })
+
+  // Decrypt functionality
+  const decryptBtn = document.getElementById("decrypt-btn")
+  const decryptText = document.getElementById("decrypt-text")
+  const decryptResult = document.getElementById("decrypt-result")
+
+  decryptBtn.addEventListener("click", () => {
+    // Check if JSEncrypt is available
+    if (typeof JSEncrypt === "undefined") {
+      showError(decryptBtn, "Encryption library not loaded. Please check your internet connection.")
+      return
+    }
+
+    // Validate inputs
+    if (!decryptText.value.trim() || !privateKeyInput.value.trim()) {
+      showError(decryptBtn, "Please fill in all fields")
+      return
+    }
+
+    try {
+      // Create a new instance for decryption
+      const decryptInstance = new JSEncrypt()
+      decryptInstance.setPrivateKey(privateKeyInput.value)
+
+      // Decrypt the text
+      const decrypted = decryptInstance.decrypt(decryptText.value)
+
+      if (decrypted === false || decrypted === null) {
+        showError(decryptBtn, "Decryption failed. Check your private key and encrypted text.")
+        return
+      }
+
+      decryptResult.textContent = decrypted
+    } catch (error) {
+      showError(decryptBtn, "Decryption error: " + error.message)
+    }
+  })
+
+  // Copy functionality
+  setupCopyButton("encrypt-copy", "encrypt-result")
+  setupCopyButton("decrypt-copy", "decrypt-result")
+  setupCopyButton("copy-public-key", "public-key-display")
+  setupCopyButton("copy-private-key", "private-key-display")
+
+  // Helper functions
+  function setupCopyButton(buttonId, resultId) {
+    const copyBtn = document.getElementById(buttonId)
+    const resultElement = document.getElementById(resultId)
+
+    copyBtn.addEventListener("click", () => {
+      const textToCopy = resultElement.value || resultElement.textContent
+      if (!textToCopy) return
+
+      navigator.clipboard
+        .writeText(textToCopy)
+        .then(() => {
+          copyBtn.classList.add("copied")
+          setTimeout(() => {
+            copyBtn.classList.remove("copied")
+          }, 2000)
+        })
+        .catch((err) => {
+          console.error("Failed to copy text: ", err)
+        })
+    })
+  }
+
+  function showError(element, message) {
+    // Remove any existing error messages
+    const existingError = element.parentNode.querySelector(".error-message")
+    if (existingError) {
+      existingError.remove()
+    }
+
+    // Create and append error message
+    const errorElement = document.createElement("div")
+    errorElement.className = "error-message"
+    errorElement.textContent = message
+    element.insertAdjacentElement("afterend", errorElement)
+
+    // Remove error after 3 seconds
+    setTimeout(() => {
+      errorElement.remove()
+    }, 3000)
+  }
+
+  // Wait a moment to ensure JSEncrypt is loaded before generating keys
+  setTimeout(() => {
+    // Generate keys on page load
+    
+  }, 500)
+})
+  </script>
+</body>
+</html>
